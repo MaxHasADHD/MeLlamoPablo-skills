@@ -87,6 +87,7 @@ A code example is code that is not in the PR, and that shows how something uses 
   - Each decision of the "Decisions" section → a decision, where it applies (see [Decisions](#decisions)).
   - A before/after table → the use-sites section, with the author's lead-in sentence above it.
   - Evidence (eval runs, benchmarks) → one short sentence with the result and what it shows, and a link to the run.
+  - Claims that CI, the type check, the lint or the tests pass → leave them out. A PR that is ready for review already passes them.
   - Out of scope and follow-up work → the header, with a link. When a follow-up has no PR or issue yet, write it as a plan, in the future tense ("A later PR will add a check for …"). Do this also when the author writes it in the present tense: "A follow-up PR adds the check …" tells the reader that the PR exists.
   - PRs that this PR needs ("Stacked on #X", "Depends on #X", "Deploys with #X") → a header note, only while the linked PR is open. `gather.sh` prints the state of each PR that the description links to. A merged PR is in the base branch, so leave out its mention. Mention a merged PR only when the reader needs it to understand this PR, and then write it as history ("#X made the response flat"), not as a pending base ("Stacked on #X").
   - "Alternatives considered", and sentences such as "Doing X instead would …" → a discarded idea (see [Discarded ideas](#discarded-ideas)).
