@@ -464,6 +464,11 @@ figure.diff {
 .pierre:empty { display: none; }
 figure.diff.upgraded .fallback { display: none; }
 
+/* A code example: code that is not in the PR, for example a script that calls the new API. */
+figure.example { margin: 0; --diffs-font-family: var(--font-mono); }
+figure.example.upgraded .fallback { display: none; }
+figure.example .fallback pre { padding: 8px 12px; white-space: pre-wrap; word-break: break-word; }
+
 .fallback {
 	border: 1px solid var(--rule);
 	border-radius: 8px;
@@ -684,6 +689,11 @@ digraph {
 </script>
 <script type="text/plain" class="new">
 {{new code}}
+</script>
+		</figure>
+		<figure class="example" data-lang="typescript">
+<script type="text/plain">
+{{example code}}
 </script>
 		</figure>
 		<aside class="discarded">
@@ -1034,6 +1044,24 @@ function onExpanderEvent(event, path) {
 for (const figure of figures) {
 	const fallback = figure.querySelector(".fallback")
 	for (const type of ["click", "keydown"]) fallback.addEventListener(type, event => onExpanderEvent(event, figure.dataset.path))
+}
+
+// A code example is not in the PR, so it has no header, no link and no diff. The diff viewer highlights it.
+const examples = [...document.querySelectorAll("figure.example")]
+
+function readExample(example) {
+	return example.querySelector("script").textContent.replace(/^\n/, "").replace(/\s+$/, "") + "\n"
+}
+
+for (const example of examples) {
+	const fallback = document.createElement("div")
+	fallback.className = "fallback"
+	const pre = document.createElement("pre")
+	pre.textContent = readExample(example)
+	fallback.append(pre)
+	const viewer = document.createElement("div")
+	viewer.className = "pierre"
+	example.append(fallback, viewer)
 }
 
 const TEST_CHANGE_TITLES = { added: "Added test", modified: "Modified test", removed: "Removed test" }
@@ -1425,13 +1453,31 @@ function markLines(root, figure) {
 }
 
 try {
-	const { FileDiff } = await import("https://cdn.jsdelivr.net/npm/@pierre/diffs@1.5.2/+esm")
+	const { File, FileDiff } = await import("https://cdn.jsdelivr.net/npm/@pierre/diffs@1.5.2/+esm")
+	const theme = { dark: "pierre-dark", light: "pierre-light" }
+	const exampleViewers = examples.map(example => {
+		const target = example.querySelector(".pierre")
+		const viewer = new File({
+			theme,
+			themeType: currentThemeType(),
+			overflow: "wrap",
+			disableFileHeader: true,
+			disableLineNumbers: true,
+		})
+		viewer.render({
+			file: { name: "example", lang: example.dataset.lang, contents: readExample(example) },
+			containerWrapper: target,
+		})
+		if (target.childElementCount > 0) example.classList.add("upgraded")
+		return viewer
+	})
+
 	const instances = []
 	for (const figure of figures) {
 		const { href } = figure.dataset
 		const target = figure.querySelector(".pierre")
 		const instance = new FileDiff({
-			theme: { dark: "pierre-dark", light: "pierre-light" },
+			theme,
 			themeType: currentThemeType(),
 			diffStyle: currentDiffStyle(),
 			overflow: "wrap",
@@ -1465,7 +1511,7 @@ try {
 		viewers.set(figure, instance)
 	}
 	new MutationObserver(() => {
-		for (const instance of instances) instance.setThemeType(currentThemeType())
+		for (const viewer of [...exampleViewers, ...instances]) viewer.setThemeType(currentThemeType())
 	}).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] })
 
 	function updateDiffStyle() {

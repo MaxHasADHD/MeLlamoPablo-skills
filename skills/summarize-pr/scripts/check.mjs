@@ -193,6 +193,24 @@ const baseRunsOf = path => {
 	return baseRunsByPath.get(path)
 }
 
+// A code example is not in the PR, so it has no path or line, and it does not count toward the budget.
+for (const [, attributes, body] of html.matchAll(/<figure class="example"([^>]*)>([\s\S]*?)<\/figure>/g)) {
+	if (!attribute(attributes, "data-lang")) errors.push("A code example has no data-lang.")
+	const code = body.match(/<script type="text\/plain">([\s\S]*?)<\/script>/)?.[1] ?? ""
+	if (!code.trim()) errors.push('A code example has no code in a <script type="text/plain">.')
+
+	for (const line of toLines(code)) {
+		const columns = line.replaceAll("\t", " ".repeat(TAB_WIDTH)).length
+		if (columns > MAX_COLUMNS) {
+			errors.push(`Code example: line has ${columns} columns, limit ${MAX_COLUMNS}: ${line.trim().slice(0, 60)}`)
+		}
+	}
+}
+
+if (/<pre[^>]*>\s*<code/.test(html)) {
+	errors.push('A code block is a <pre><code>. Write it as <figure class="example">, so that the page highlights it.')
+}
+
 for (const [, attributes, body] of html.matchAll(/<figure class="diff"([^>]*)>([\s\S]*?)<\/figure>/g)) {
 	const path = attribute(attributes, "data-path")
 	const name = path ?? "(figure without data-path)"

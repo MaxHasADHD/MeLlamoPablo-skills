@@ -14,7 +14,7 @@ The rules have two parts:
 - **Content** is subjective. You decide what to show and how to say it.
 - **Form** is objective. Do not deviate from it. `template.html` and `scripts/check.mjs` already hold most of it, and a harness will take over the rest later.
 
-The page is HTML, not a form to fill in. The template gives the blocks that most PRs need: diffs, charts, decisions and a test list. Start from them, but do not stop at them. When a block of your own (for example a table of results) shows the point of a PR better, write it (see [Freeform blocks](#freeform-blocks)).
+The page is HTML, not a form to fill in. The template gives the blocks that most PRs need: diffs, code examples, charts, decisions and a test list. Start from them, but do not stop at them. When a block of your own (for example a table of results) shows the point of a PR better, write it (see [Freeform blocks](#freeform-blocks)).
 
 ## Steps
 
@@ -64,6 +64,16 @@ A freeform block is HTML that the template does not have, for example a table or
 - A freeform block replaces the standard block that shows the same thing. Do not show the same thing two times.
 - Do not write a freeform block that only decorates, or that shows what a diff, a chart or one sentence shows as well.
 - All the other rules apply to a freeform block: the story order, the words, the budget (each test name in it counts as a shown line) and the look of the page (see [Form](#freeform-blocks-1)).
+
+### Code examples
+
+A code example is code that is not in the PR, and that shows how something uses the change: for example, a script that an AI agent writes with the new operations, or a call to a new API with its result.
+
+- Write one when the PR adds or changes something that other code or an agent calls, and a few calls show it better than the signatures do. It usually goes in the use-sites section, before the contract.
+- Write only calls that the code and the tests of the PR support. Take the names, the arguments and the values from the tests or the evals of the PR, so that the example is real.
+- Keep it short: one call for each thing that the reader can now do, with a one-line comment above each call that says what it does.
+- A code example does not count toward the budget, because its lines are not PR lines. Do not use one to show PR code: PR code goes in a diff.
+- Never write a code example as a freeform block. The template has a block for it, with syntax highlighting (see [Form](#code-examples-1)).
 
 ### Use the author's words
 
@@ -374,6 +384,14 @@ The rules marked ✓ are checked by `scripts/check.mjs` or `scripts/render-chart
 - Tests are `<div class="tests">` with one `<div data-path="<test file>">` for each file, containing `<ul><li data-line="<n>" data-change="added">plain test name</li></ul>`. ✓ `data-line` is the line of the test in the head commit. For a removed test, `data-path` and `data-line` are its path and line at the merge base, as in `removed-tests.txt`. ✓ `data-change` is `added`, `modified` or `removed`. ✓ A renamed test (see [Content](#tests)) is `modified` and has `data-renamed-from="<path>:<line>"` from its line in `removed-tests.txt`. A test that replaces several removed tests lists all of them, with a space between them. The template adds the file heading and the links, and puts a green `+` (added), an orange `~` (modified) or a red `−` (removed) in place of the bullet, with a tooltip that says which.
 - A test table (see [Content](#tests)) is a `<table>` in place of the `<ul>`, in the same `<div data-path>`. Put each test name in its own `<td data-line="<n>" data-change="…">`, with the same attributes as the `<li>` and only the name in it. The template then gives the cell the same link and change mark as a list item, and ✓ the check counts it in the same way. The other cells and rows are yours.
 - The section heading is "Tests", with no other label.
+
+### Code examples
+
+- Each code example is `<figure class="example" data-lang="<language>">` with one `<script type="text/plain">` that has the code. ✓ It has a `data-lang` and code. It has no `data-path` and no `data-line`, because the code is not in the repo.
+- The template highlights it with the diff viewer, in the page themes, with no header, no line numbers and wrapped lines. Before the library loads, it shows the plain code.
+- ✓ Each code line is at most 100 columns, with a tab as 2 columns. Use the repo's indentation, and blank lines as [space-around.md](space-around.md) says.
+- ✓ Do not write code as `<pre><code>`: the page then shows it without highlighting.
+- The code must not contain `</script`.
 
 ### Freeform blocks
 
