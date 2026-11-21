@@ -511,6 +511,7 @@ figure.example .fallback pre { padding: 8px 12px; white-space: pre-wrap; word-br
 	font-weight: 500;
 	font-size: inherit;
 	color: var(--accent);
+	overflow-wrap: anywhere;
 }
 .tests ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; list-style: none; }
 /* A test name is a list item, or a table cell in a freeform test table. */
@@ -521,6 +522,21 @@ figure.example .fallback pre { padding: 8px 12px; white-space: pre-wrap; word-br
 .tests [data-line][data-change="added"]::before { content: "+"; color: var(--add); }
 .tests [data-line][data-change="modified"]::before { content: "~"; color: var(--accent); }
 .tests [data-line][data-change="removed"]::before { content: "−"; color: var(--del); }
+/* The tests of one describe block: its name one time, and the tests indented below it. */
+.tests .describe-name { font-family: var(--font-mono); }
+.tests li.describe > ul { margin-top: 4px; }
+/* The cases of one parameterized test: a bracket left of the marks joins them, and they have no gap. */
+.tests li.cases { position: relative; }
+.tests li.cases > ul { padding-left: 0; gap: 0; }
+.tests li.cases::before {
+	position: absolute;
+	inset: 5px auto 5px -28px;
+	width: 5px;
+	border: 1px solid var(--muted);
+	border-right: 0;
+	border-radius: 3px 0 0 3px;
+	content: "";
+}
 .tests [data-line] a, .fallback-head a {
 	color: var(--muted);
 	text-decoration: underline;
@@ -1067,7 +1083,8 @@ for (const example of examples) {
 const TEST_CHANGE_TITLES = { added: "Added test", modified: "Modified test", removed: "Removed test" }
 for (const group of document.querySelectorAll(".tests [data-path]")) {
 	const heading = document.createElement("h3")
-	heading.textContent = group.dataset.path.split("/").pop()
+	// The full path, because many files in a repo share a name (for example index.test.ts).
+	heading.textContent = group.dataset.path
 	group.prepend(heading)
 	for (const item of group.querySelectorAll("[data-line]")) {
 		const { change, line, renamedFrom } = item.dataset

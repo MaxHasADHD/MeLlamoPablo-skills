@@ -393,6 +393,31 @@ const removedTestCount = testNames.filter(([, , , attributes]) => attribute(attr
 shownAdditions += testNames.length - removedTestCount
 shownDeletions += removedTestCount
 
+// The cases of one parameterized test have the same line at the head commit. The page shows them as one group, so
+// that the reader does not take them for different tests.
+const TEST_LIST = /<div data-path="([^"]*)">\s*<(ul|table)\b[^>]*>([\s\S]*?)<\/\2>\s*<\/div>/g
+for (const [, path, , list] of html.matchAll(TEST_LIST)) {
+	const ungrouped = list.replace(/<li class="cases"[^>]*>\s*<ul>[\s\S]*?<\/ul>\s*<\/li>/g, "")
+	const lines = [...ungrouped.matchAll(/<li data-line="([^"]*)"([^>]*)>/g)]
+		.filter(([, , attributes]) => attribute(attributes, "data-change") !== "removed")
+		.map(([, line]) => line)
+	for (const line of new Set(lines.filter((line, index) => lines.indexOf(line) !== index))) {
+		errors.push(
+			`${path}:${line}: more than one test name has this line, so they are cases of one test. ` +
+				'Put them in one <li class="cases" title="Cases of one test"><ul>…</ul></li>.',
+		)
+	}
+
+	// A name such as "the parser: keeps the order" repeats the name of its describe block in each test.
+	const prefixes = [...list.matchAll(/<li data-line="[^"]*"[^>]*>\s*([^<:{"]+): /g)].map(([, prefix]) => prefix.trim())
+	for (const prefix of new Set(prefixes.filter((prefix, index) => prefixes.indexOf(prefix) !== index))) {
+		warnings.push(
+			`${path}: more than one test name starts with "${prefix}: ". If it is a describe block, ` +
+				'put its tests in one <li class="describe"> with the name in <span class="describe-name">.',
+		)
+	}
+}
+
 // gather.sh writes removed-tests.txt next to the page. The page shows each removed test as removed, or the test that
 // replaces it under a new name with data-renamed-from. A test that replaces several tests lists them all, with spaces
 // between them.
@@ -400,7 +425,7 @@ const removedTestsPath = join(dirname(pagePath), "removed-tests.txt")
 if (existsSync(removedTestsPath)) {
 	const shownAsRemoved = new Set()
 	const shownAsRenamed = new Set()
-	for (const [, path, , list] of html.matchAll(/<div data-path="([^"]*)">\s*<(ul|table)\b[^>]*>([\s\S]*?)<\/\2>/g)) {
+	for (const [, path, , list] of html.matchAll(TEST_LIST)) {
 		for (const [, line, attributes] of list.matchAll(/<(?:li|td) data-line="([^"]*)"([^>]*)>/g)) {
 			if (attribute(attributes, "data-change") === "removed") shownAsRemoved.add(`${path}:${line}`)
 			for (const where of attribute(attributes, "data-renamed-from")?.split(/\s+/).filter(Boolean) ?? []) {
