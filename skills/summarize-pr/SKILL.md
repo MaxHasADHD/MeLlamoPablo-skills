@@ -351,7 +351,7 @@ The rules marked ✓ are checked by `scripts/check.mjs` or `scripts/render-chart
 - Shorten with `// ...` for left-out statements and `/* ... */` for left-out expressions, parameters and types. A shortened literal must not look complete: write `{ endpoint: /* ... */, siteId, root }`, not `{ endpoint, siteId, root }`.
 - ✓ No `import` lines and no `export … from` lines.
 - The code must not contain `</script`.
-- A page comment is a comment that is only on the page, not in the PR. Start each of its lines with `//!`. The template shows `//`, in a dim accent color, with a tooltip that says the comment is not in the code.
+- A page comment is a comment that is only on the page, not in the PR. Write each of its lines as `//! <text>`. The template shows `//`, in a dim accent color, with a tooltip that says the comment is not in the code.
 - ✓ A page comment never points to other code on the page, or tells where code moved from or to (for example `//! Moved to Deploy (diff above)` or `//! Old side below`). Show that code in a diff in its place: a move diff for moved code.
 
 ### Review threads
